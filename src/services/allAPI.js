@@ -32,8 +32,40 @@ export const addToHistory = async (videoDetails) => {
     return await commonAPI("POST",`${serverURL}/history`,videoDetails)
 }
 
-// get all watching video history from json server
-export const getAllHistory = async (videoDetails) => {
+// delete watching video  history from json server
+export const deleteHistory = async (id) => {
+    // make delete http request to http://localhost:4000/history/id to delete all video history in json server and return response to History component
+    return await commonAPI("DELETE",`${serverURL}/history/${id}`,{})
+}
+
+
+// delete all watching video history from json server
+export const getAllHistory = async () => {
     // make get http request to http://localhost:4000/history to get all video history in json server and return response to History component
     return await commonAPI("GET",`${serverURL}/history`,"")
 }
+
+// add a Category to Json server
+export const addCategory = async (reqBody)=>{
+    // make post http request to http://localhost:4000/categories to add Category in json server and return response to Category component
+    return await commonAPI("POST",`${serverURL}/categories`,reqBody)
+}
+
+// get a Category from Json server
+export const getAllCategory = async ()=>{
+    // make get http request to http://localhost:4000/categories to get all Category from json server and return response to Category component
+    return await commonAPI("GET",`${serverURL}/categories`,"")
+}
+
+// delete a Category from Json server
+export const deleteCategory = async (id)=>{
+    // make delete http request to http://localhost:4000/categories/id to delete perticular from json server and return response to Category component
+    return await commonAPI("DELETE",`${serverURL}/categories/${id}`,{})
+}
+
+// update a Category from Json server
+export const updateCategory = async (id,body)=>{
+    // make put http request to http://localhost:4000/categories/id to update perticular from json server and return response to Category component
+    return await commonAPI("PUT",`${serverURL}/categories/${id}`,body)
+}
+

@@ -1,7 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { deleteHistory, getAllHistory } from "../services/allAPI";
 
 function WatchHistory() {
+
+  const [history,setHistory] = useState([])
+
+  const handleHistory = async ()=>{
+    // make api call
+    const {data} = await getAllHistory()
+    setHistory(data);
+  }
+
+  console.log(history);
+
+  useEffect(()=>{
+    handleHistory()
+  },[])
+
+  const handleDeleteHistory = async (id)=>{
+     // make api call
+     await deleteHistory(id)
+     // get remaining history
+     handleHistory()
+
+  }
+
+
   return (
     <>
       <div className="container mt-5 m-5 d-flex justify-content-between">
@@ -19,17 +44,24 @@ function WatchHistory() {
             <th>Caption</th>
             <th>URL</th>
             <th>Time Stamp</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>Kanban</td>
+        {
+        history?.length>0?history?.map((item,index)=>(
+          <tr key={index}>
+            <td>{index+1}</td>
+            <td>{item?.caption}</td>
             <td>
-              <a href="https://fontawesome.com/">https://fontawesome.com/</a>
+              <a href={item?.embedLink} target="_blank">{item?.embedLink}</a>
             </td>
-            <td>4/10/23</td>
+            <td>{item?.timeStamp}</td>
+            <td><button onClick={()=>handleDeleteHistory(item?.id)} className="btn"><i className="fa-solid fa-trash text-danger"></i></button></td>
           </tr>
+        ))  : 
+        <p className="fw-bolder fs-5 text-danger">No Watch History..</p>
+        }
         </tbody>
       </table>
     </>

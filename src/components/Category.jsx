@@ -1,18 +1,119 @@
-import React,{useState} from 'react'
-import { Form, Modal , Button } from 'react-bootstrap';
+import React,{useEffect, useState} from 'react'
+import { Form, Modal , Button, Col ,Row } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { addCategory, deleteCategory, getAVideos, getAllCategory, updateCategory } from '../services/allAPI';
+import VideoCard from './VedioCard' ;
 
 
 function Category() {
+  const [allCategories,setAllCategories] = useState([])
+  const [categoryName,setCategoryName] = useState("")
 
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleAddCategory = async ()=>{
+    if(categoryName){
+
+      let body={
+        categoryName,allVideos:[]
+      }
+
+      // make api call 
+      const response = await addCategory(body)
+      if(response.status>=200 && response.status<300){
+        handleClose()
+        // rest state
+        setCategoryName("")
+        // get categories call
+        getCategories()
+      }else{
+        toast.error("Operation Failed!!..Try again After some time..")
+      }
+    }else{
+      toast.warning("Please provide Category Name")
+    }
+  }
+
+  const getCategories = async ()=>{
+    // make api call 
+    const {data} = await getAllCategory()
+    setAllCategories(data);
+  }
+
+
+  useEffect(()=>{
+    getCategories()
+  },[])
+
+  const handleDelete = async (id)=> {
+    await deleteCategory(id)
+    getCategories()
+  }
+
+  
+  const dragOver = (e)=>{
+    console.log("Video drag over category ID");
+    e.preventDefault();
+  }
+
+
+  const videoDrop = async (e,categoryId)=>{
+    // console.log("Video Dropped inside category ID : " +categoryId);
+    const videoId = e.dataTransfer.getData("videoId")
+    // console.log("Video Card ID ",videoId);
+    // get video details
+    const {data} = await getAVideos(videoId)
+    // console.log(data);
+
+    // get categories details
+    const selectedCategory = allCategories?.find(item=>item.id===categoryId)
+    selectedCategory.allVideos.push(data)
+    console.log(selectedCategory);
+
+    // make api call to update category
+    await updateCategory(categoryId,selectedCategory)
+    getCategories()
+
+
+
+
+  }
+
+ 
   return (
     <>
       <div className="d-grid ms-3">
         <button onClick={handleShow} className="btn btn-secondary">Add New Category</button>  
       </div> 
+
+      {
+        allCategories?.length>0?allCategories?.map(item=>(
+          <div className="m-5 border rounded p-3" droppable onDragOver={(e)=>dragOver(e)} onDrop={(e)=>videoDrop(e,item?.id)}>
+            <div className="d-flex justify-content-between align-items-center">
+              <h6>{item?.categoryName}</h6>
+              <button onClick={()=>handleDelete(item?.id)} className='btn'><i className="fa-solid fa-trash text-danger"></i></button>
+            </div>
+
+            <Row>
+              {
+                item?.allVideos &&
+                item?.allVideos.map(card=>(
+                  <Col sm={12}>
+                    <VideoCard displayData={card}  insideCategory={true}/>
+                  </Col>
+                ))
+              }
+            </Row>
+
+
+          </div>
+        )):
+        <p className="fw-bolder fs-5 text-danger">No Categories Add..!!</p>
+      }
 
       <Modal
         show={show}
@@ -24,26 +125,26 @@ function Category() {
           <Modal.Title>Add New Category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p> Please Fill the following details !!! </p>
+
           <Form className="border border-secondary rounded p-3">
-
+            <Form.Label> Enter Category  Name </Form.Label>
             <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Control type="text" placeholder="Enter Category ID" />
+              <Form.Control type="text" placeholder="Enter Category  Name" onChange={(e)=>setCategoryName(e.target.value)} />
             </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Control type="text" placeholder="Enter Category  Name" />
-            </Form.Group>
-
           </Form>
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="primary">Add</Button>
+          <Button onClick={handleAddCategory} variant="primary">Add</Button>
         </Modal.Footer>
       </Modal>
+      <ToastContainer
+      position="top-center"
+      autoClose={2000}
+      />
     </>
   )
 }

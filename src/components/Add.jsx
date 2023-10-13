@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Modal, Button,Form } from "react-bootstrap";
 import { uploadVideo } from "../services/allAPI";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Add({setUploadVideoServerResponse}) {
 
@@ -30,20 +32,24 @@ function Add({setUploadVideoServerResponse}) {
     const {id,caption,url,embedLink} = video
     
     if(!id || !caption || !url || !embedLink){
-      alert("Please fill the form Completely..!!")
+      toast.warning("Please fill the form Completely..!!")
     }else{
         // make api call UploadVideo
          const response = await uploadVideo(video)
          console.log(response);
          if(response.status>=200 && response.status<300){
-          alert(`${response.data.caption} vedio uploaded Successfully!!!` )
+          toast.success(`${response.data.caption} vedio uploaded Successfully!!!` )
           // set Server response
           setUploadVideoServerResponse(response.data)
+          // reset the video
+          setVideo({
+            id:"",caption:"",url:"",embedLink:""
+          })
           // hide Modal
           handleClose()
          }else{
           // console.log(response);
-          alert("Can't perform the Operation now. Please try after some time..")
+          toast.error("Can't perform the Operation now. Please try after some time..")
 
 
          }
@@ -67,7 +73,7 @@ function Add({setUploadVideoServerResponse}) {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Modal title</Modal.Title>
+          <Modal.Title>Upload a Videos...</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p> Please Fill the following details !!! </p>
@@ -98,6 +104,10 @@ function Add({setUploadVideoServerResponse}) {
           <Button variant="primary" onClick={handleUpload}>Upload</Button>
         </Modal.Footer>
       </Modal>
+      <ToastContainer
+      position="top-center"
+      autoClose={2000}
+      />
     </>
   );
 }

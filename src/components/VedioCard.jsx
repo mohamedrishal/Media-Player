@@ -1,13 +1,27 @@
 import React, { useState } from "react";
 import Card from "react-bootstrap/Card";
 import { Modal } from "react-bootstrap";
-import { deleteAVideos } from "../services/allAPI";
+import { addToHistory, deleteAVideos } from "../services/allAPI";
+import Category from "./Category";
 
-function VedioCard({displayData,setDeleteVedioStatus}) {
+function VedioCard({displayData,setDeleteVedioStatus,insideCategory}) {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = async () => {
+    setShow(true);
+    // make api call http://localhost:4000/history
+    const {caption,embedLink} = displayData
+    let today = new Date();
+    let timeStamp = new Intl.DateTimeFormat('en-US',{year:'numeric',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(today)
+
+    let videoDetails = {
+      caption,embedLink,timeStamp
+    }
+
+    await addToHistory(videoDetails)
+
+  }
 
   const removeVideo = async (id)=>{
     // make api call 
@@ -16,12 +30,18 @@ function VedioCard({displayData,setDeleteVedioStatus}) {
 
   }
 
+  const dragStarted = (e,id)=>{
+
+    console.log(`Drag started ...video card `+id);
+    e.dataTransfer.setData("VideoId",id)
+  }
+
   return (
     <>
     {
       displayData && 
       
-      <Card className="mb-3">
+      <Card className="mb-3" draggable onDragStart={(e)=>dragStarted(e,displayData?.id)}>
         <Card.Img
           height={'180px'}
           onClick={handleShow}
@@ -31,9 +51,9 @@ function VedioCard({displayData,setDeleteVedioStatus}) {
         <Card.Body>
           <Card.Title className="d-flex justify-content-between align-items-center">
             <h6>{displayData?.caption}</h6>
-            <button onClick={()=>removeVideo(displayData?.id)} className="btn">
+           { insideCategory?"": <button onClick={()=>removeVideo(displayData?.id)} className="btn">
               <i className="fa-solid fa-trash text-danger"></i>
-            </button>
+            </button>}
           </Card.Title>
         </Card.Body>
       </Card>
